@@ -1,5 +1,5 @@
-import { join, resolve } from "node:path";
 import { execSync } from "node:child_process";
+import { join, resolve } from "node:path";
 import polliSkill from "../../SKILL.md?raw";
 import { BASE_URL } from "../lib/config.js";
 import { readTextIfExists, removeIfExists, writeTextAtomic } from "./fs.js";
@@ -34,8 +34,10 @@ const isPiInstalled = (): boolean => {
     }
 };
 
-const configPath = (ctx: HarnessContext) => join(ctx.home, CONFIG_DIR, CONFIG_FILE);
-const skillPath = (ctx: HarnessContext) => join(ctx.home, SKILL_DIR, "SKILL.md");
+const configPath = (ctx: HarnessContext) =>
+    join(ctx.home, CONFIG_DIR, CONFIG_FILE);
+const skillPath = (ctx: HarnessContext) =>
+    join(ctx.home, SKILL_DIR, "SKILL.md");
 
 const files = (ctx: HarnessContext) => [configPath(ctx), skillPath(ctx)];
 
@@ -56,7 +58,11 @@ const readConfig = (ctx: HarnessContext): PiConfig => {
 };
 
 const writeConfig = (config: PiConfig, ctx: HarnessContext) => {
-    writeTextAtomic(configPath(ctx), `${JSON.stringify(config, null, 2)}\n`, 0o600);
+    writeTextAtomic(
+        configPath(ctx),
+        `${JSON.stringify(config, null, 2)}\n`,
+        0o600,
+    );
 };
 
 const ensurePiInstalled = () => {
@@ -86,7 +92,8 @@ const providerConfig = (models: HarnessModel[], apiKey: string) => ({
             name: m.id,
             contextWindow: m.contextWindow,
             input: m.input,
-            reasoning: (m as unknown as Record<string, unknown>).reasoning ?? false,
+            reasoning:
+                (m as unknown as Record<string, unknown>).reasoning ?? false,
         })),
     },
 });
@@ -100,7 +107,10 @@ interface PiSettings {
 const writePiConfig = (ctx: HarnessContext, settings: PiSettings) => {
     const config = readConfig(ctx);
     const providers = (config.providers ?? {}) as Record<string, unknown>;
-    const pollinationsProvider = providerConfig(settings.models, settings.apiKey);
+    const pollinationsProvider = providerConfig(
+        settings.models,
+        settings.apiKey,
+    );
 
     // Preserve unrelated providers — only touch pollinations.
     config.providers = {
@@ -149,7 +159,9 @@ const stripPiConfig = (ctx: HarnessContext): boolean => {
 const result = (ctx: HarnessContext): HarnessResult => {
     const config = readConfig(ctx);
     const providers = config.providers as Record<string, unknown> | undefined;
-    const pollinations = providers?.[PROVIDER] as Record<string, unknown> | undefined;
+    const pollinations = providers?.[PROVIDER] as
+        | Record<string, unknown>
+        | undefined;
     const optionsOk =
         !!pollinations &&
         typeof pollinations.baseUrl === "string" &&
@@ -164,7 +176,11 @@ const result = (ctx: HarnessContext): HarnessResult => {
         harness: ID,
         label: LABEL,
         configured: !!optionsOk && hasSkill && modelCount > 0,
-        model: optionsOk ? (pollinations as Record<string, unknown>).model as string | undefined : undefined,
+        model: optionsOk
+            ? ((pollinations as Record<string, unknown>).model as
+                  | string
+                  | undefined)
+            : undefined,
         files: files(ctx),
     };
 };
@@ -199,12 +215,18 @@ export const pi: HarnessAdapter = {
         const model = options.model ?? DEFAULT_MODEL;
         const models = await fetchHarnessModels();
         if (!models.some((m) => m.id === model)) {
-            throw new Error(`Model "${model}" is not a tool-calling text model. Run: polli models`);
+            throw new Error(
+                `Model "${model}" is not a tool-calling text model. Run: polli models`,
+            );
         }
         const existingKey = (() => {
             const cfg = readConfig(ctx);
-            const prov = (cfg.providers as Record<string, unknown> | undefined)?.[PROVIDER] as Record<string, unknown> | undefined;
-            return typeof prov?.apiKey === "string" ? String(prov.apiKey) : null;
+            const prov = (
+                cfg.providers as Record<string, unknown> | undefined
+            )?.[PROVIDER] as Record<string, unknown> | undefined;
+            return typeof prov?.apiKey === "string"
+                ? String(prov.apiKey)
+                : null;
         })();
         const apiKey = await resolveHarnessKey(
             { id: ID, label: LABEL, existingKey },
