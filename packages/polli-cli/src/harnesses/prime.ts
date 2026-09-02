@@ -1,5 +1,5 @@
-import { join } from "node:path";
 import { execSync } from "node:child_process";
+import { join } from "node:path";
 import polliSkill from "../../SKILL.md?raw";
 import { BASE_URL } from "../lib/config.js";
 import { readTextIfExists, removeIfExists, writeTextAtomic } from "./fs.js";
@@ -38,7 +38,10 @@ const skillPath = (ctx: HarnessContext) =>
 
 const files = (ctx: HarnessContext) => [extensionPath(ctx), skillPath(ctx)];
 
-const extensionSource = (apiKey: string, models: HarnessModel[]) => `import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+const extensionSource = (
+    apiKey: string,
+    models: HarnessModel[],
+) => `import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 export default function(pi: ExtensionAPI) {
   pi.registerProvider("${PROVIDER}", {
@@ -125,7 +128,9 @@ export const configurePrime = (
     settings: PrimeSettings,
 ): HarnessResult => {
     ensurePrimeInstalled();
-    applyWithSnapshot(ctx, ID, files(ctx), () => writePrimeExtension(ctx, settings));
+    applyWithSnapshot(ctx, ID, files(ctx), () =>
+        writePrimeExtension(ctx, settings),
+    );
     return result(ctx);
 };
 
@@ -150,7 +155,9 @@ export const prime: HarnessAdapter = {
         const model = options.model ?? DEFAULT_MODEL;
         const models = await fetchHarnessModels();
         if (!models.some((m) => m.id === model)) {
-            throw new Error(`Model "${model}" is not a tool-calling text model. Run: polli models`);
+            throw new Error(
+                `Model "${model}" is not a tool-calling text model. Run: polli models`,
+            );
         }
         const apiKey = await resolveHarnessKey(
             { id: ID, label: LABEL, existingKey: null },
